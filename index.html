@@ -28,39 +28,45 @@ line.link {
 <script src="http://d3js.org/d3.v3.js"></script>
 <script>
 
-var width = 960,
-    height = 500;
-
-var dataTree; 
-
-var force = d3.layout.force()
-    .linkDistance(80)
-    .charge(-120)
-    .gravity(.05)
-    .size([width, height])
-    .on("tick", tickHandler);
-
+// anchor svg element
+var width = 960, height = 500;
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-var linksD3 = svg.selectAll(".link"),
-    nodesD3 = svg.selectAll(".node");
+// d3 force simulation layout
+var forceSimulation = d3.layout.force()
+        .linkDistance(80)
+        .charge(-120)
+        .gravity(.05)
+        .size([width, height])
+        .on("tick", tickHandler);
 
+// tree representing the data -
+// it will be mutated in order to hide and reshow nodes,
+// or if we'd like to add nodes etc...
+var dataTree;
+
+// d3 managed svg nodes - d3 will manage bound data inside them
+var linksD3 = svg.selectAll(".link")
+var nodesD3 = svg.selectAll(".node")
+
+// load the data from json
 d3.json("graph.json", function(error, json) {
   dataTree = json;
-  syncLayout();
+  startVisualization();
 });
 
+//
+// bind or re-bind the data to d3 -
+// so that d3 can automagically do its transitions according to it
+//
 function rebind() {
 
-  // clever shortcut for getting both the links array 
-  // and nodes array (necessary for the force simulation) from a single hierarchical json
-  var nodes = flatten(dataTree),                 
-      links = d3.layout.tree().links(nodes); // abusing the tree layout to get the nodes from a tree...
-  
-  console.log(nodes.length)
-  console.dir(nodesD3.length)
+  // clever shortcut for de-structuring a links array and nodes array for force simulation input,
+  // from a single json hierarchy
+  var nodes = flattenDataTree(dataTree),                 
+      links = d3.layout.tree().links(nodes); // abusing the tree layout to get the links array through it...
 
   nodesD3 = nodesD3.data(nodes, function(d) { return d.id; });
   linksD3 = linksD3.data(links, function(d) { return d.target.id; });
@@ -91,7 +97,12 @@ function layoutRemoveCancelled(callback) {
   
 }
 
-function layoutAddNew() {
+//
+// handle the syncing of new data with the visualization,
+// among which, stacking the event behaviours they need
+// to have to play nicely
+//
+function layoutInsertNew() {
 
   var data = rebind()
   nodesD3 = data.nodesD3
@@ -111,7 +122,7 @@ function layoutAddNew() {
   var nodeEnter = nodesD3.enter().append("g")
       .attr("class", "node")
       .on("click", click)
-      .call(force.drag);
+      .call(forceSimulation.drag);
 
   nodeEnter.append("circle")
       .attr("r", function(d) { return Math.sqrt(d.size) / 2 || 2; });
@@ -121,28 +132,32 @@ function layoutAddNew() {
       .text(function(d) { return d.name; });
 
   nodesD3.select("circle")
-      .style("fill", color);
+      .style("fill", colorByState);
 
 }
 
 
-function syncLayout() {
+function startVisualization() {
 
-  // clever shortcut for getting both the links array 
-  // and nodes array (necessary for the force simulation) from a single hierarchical json
-  var dataPure = flatten(dataTree),                 
-      linksPure = d3.layout.tree().links(dataPure); // abusing the tree layout to get the nodes from a tree...
+  // de-structure the data for d3
+  var nodes = flattenDataTree(dataTree),
+      links = d3.layout.tree().links(nodes);
 
-  // Restart the force layout.
-  force
-      .nodes(dataPure)
-      .links(linksPure)
+  // second tier of d3 binding - bind the d3 data to the d3 simulation
+  forceSimulation
+      .nodes(nodes)
+      .links(links)
   
-  layoutAddNew();
+  layoutInsertNew(); // cause all data is new when firstly bound
 
-  force.start()
+  // start the simulation
+  forceSimulation.start()
 }
 
+//
+// when the force simulation is running, synchronizes the location
+// of the d3 managed svg elements to the current simulation values
+//
 function tickHandler() {
   linksD3.attr("x1", function(d) { return d.source.x; })
          .attr("y1", function(d) { return d.source.y; })
@@ -152,32 +167,32 @@ function tickHandler() {
   nodesD3.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 }
 
-function color(d) {
-  return d._children ? "#3182bd" // collapsed package
-      : d.children ? "#c6dbef" // expanded package
-      : "#fd8d3c"; // leaf node
+function colorByState(d) {
+  // TODO: this isn't really making the desired effect now. probably not called from the right places
+  return d._children ? "#3182bd" // when children collapsed
+      : d.children ? "#c6dbef"   // when children visible
+      : "#c6dbef";               // leaf node color
 }
 
-// Stash away or recover node's children in the input tree
 // TODO: split into drag ignoring and actual children handling functions
+// Stash away or recover node's children in the input tree
 function click(d) {
   if (d3.event.defaultPrevented) return; // ignore drag
 
   if (d.children) {
-    force.stop()
-    d._children = d.children;
-    d.children = null;
-    layoutRemoveCancelled(force.resume);
+    forceSimulation.stop()
+    d._children = d.children
+    d.children = null
+    layoutRemoveCancelled(forceSimulation.resume)
   } else {
-    d.children = d._children;
-    d._children = null;
-    layoutAddNew();
+    d.children = d._children
+    d._children = null
+    layoutInsertNew()
   }
-
 }
 
-// Flattens an input tree into a list of nodes with ids
-function flatten(dataTree) {
+// Flattens an input tree into a list
+function flattenDataTree(dataTree) {
   var nodes = [], i = 0;
 
   function recurse(node) {
