@@ -6,19 +6,20 @@ var parsed = esprima.parse(source)
 //console.dir(JSON.stringify(parsed, null, 2))
 fs.writeFileSync('./parse.out', JSON.stringify(parsed, null, 2))
 
-var declaredFunctions = []
+var functionDeclarations = []
 var functionCalls = []
 
 function getFunctions(dataTree) {
 
-  function recurse(node) {
-    for (e in node) {
-      element = node[e]
-      if (element != null) {
-        if (element.type === 'FunctionDeclaration') declaredFunctions.push(element.id.name)            
-        if (Array.isArray(element)) recurse(element)
-        else if (typeof(element) == 'object') recurse(element)
+  function recurse(element, functionOwner) { 
+    if (element != null) {
+      if (element.type === 'FunctionDeclaration') { 
+        var functionName = element.id.name
+        functionDeclarations.push({function: functionName, owningFunction: functionOwner}) 
+        recurse(element.body, functionName)
+        return           
       }
+      if (Array.isArray(element) || typeof(element) == 'object') for (i in element) recurse(element[i], functionOwner)
     }
   }
 
@@ -29,19 +30,14 @@ function getCalls(dataTree) {
 
   var functionOwner
 
-  function recurse(node) {
-    for (e in node) {
-      element = node[e]
-
-      if (element != null) {
-        if (element.type === 'FunctionDeclaration') functionOwner = element.id.name         
-        if (element.callee) {
-          if (element.callee.name) 
-            functionCalls.push({callee: element.callee.name, caller: functionOwner})
-        }
-        if (Array.isArray(element)) recurse(element)
-        else if (typeof(element) == 'object') recurse(element)
+  function recurse(element) {
+    if (element != null) {
+      if (element.type === 'FunctionDeclaration') functionOwner = element.id.name
+      if (element.callee) {
+        if (element.callee.name) 
+          functionCalls.push({callee: element.callee.name, caller: functionOwner})
       }
+      if (Array.isArray(element) || typeof(element) == 'object') for (i in element) recurse(element[i])
     }
   }
 
@@ -49,8 +45,8 @@ function getCalls(dataTree) {
 }
 
 getFunctions(parsed)
-console.log(declaredFunctions.length)
-console.dir(declaredFunctions)
+console.log(functionDeclarations.length)
+console.dir(functionDeclarations)
 
 console.log()
 
