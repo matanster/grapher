@@ -7,7 +7,8 @@ var parsed = esprima.parse(source)
 fs.writeFileSync('./parse.out', JSON.stringify(parsed, null, 2))
 
 var functionDeclarations = []
-var functionCalls = []
+var functionCalls        = []
+var functionPassing      = []
 
 function getFunctions(dataTree) {
 
@@ -26,30 +27,63 @@ function getFunctions(dataTree) {
   recurse(dataTree);
 }
 
-function getCalls(dataTree) {
+function getPlainCalls(dataTree) {
 
-  var functionOwner
-
-  function recurse(element) {
+  function recurse(element, functionOwner) {
     if (element != null) {
       if (element.type === 'FunctionDeclaration') functionOwner = element.id.name
       if (element.callee) {
         if (element.callee.name) 
           functionCalls.push({callee: element.callee.name, caller: functionOwner})
       }
-      if (Array.isArray(element) || typeof(element) == 'object') for (i in element) recurse(element[i])
+      if (Array.isArray(element) || typeof(element) == 'object') for (i in element) recurse(element[i], functionOwner)
     }
   }
 
   recurse(dataTree);
 }
 
+function getFunctionPassing(dataTree) {
+
+  // javascript functions known to expect a function as their first argument
+  var functionSinks = ['forEach']
+
+  function recurse(element, functionOwner) {
+    if (element != null) {
+      if (element.type === 'FunctionDeclaration') functionOwner = element.id.name
+      if (element.type === 'CallExpression') 
+        if (element.callee.object)
+          if (functionSinks.some(function(f) { return f === element.callee.property.name })) 
+            functionPassing.push({callee: element.arguments[0].name, caller: functionOwner})
+      if (Array.isArray(element) || typeof(element) == 'object') for (i in element) recurse(element[i], functionOwner)
+    }
+  }
+
+  recurse(dataTree);
+}
+
+function debugArray(array) { 
+  console.log()
+  console.log(array.length)
+  console.dir(array)
+}
+
 getFunctions(parsed)
-console.log(functionDeclarations.length)
-console.dir(functionDeclarations)
+debugArray(functionDeclarations)
 
-console.log()
+getPlainCalls(parsed)
+debugArray(functionCalls)
 
-getCalls(parsed)
-console.log(functionCalls.length)
-console.dir(functionCalls)
+getFunctionPassing(parsed)
+debugArray(functionPassing)
+
+var calls = functionCalls.concat(functionPassing)
+
+var sameSourceCalls = 
+  calls.filter(function(fcall) { 
+          return functionDeclarations.some(function(fdecl) { 
+            return fcall.callee === fdecl.function })
+        })
+
+debugArray(sameSourceCalls)
+

@@ -28,16 +28,24 @@ d3.json("graph.json", function(error, json) {
   startVisualization();
 });
 
+function getLists() {
+  // clever shortcut for de-structuring a links array and nodes array for force simulation input,
+  // from a single json hierarchy
+  var nodes = flattenDataTree(dataTree)
+  var links = d3.layout.tree().links(nodes) // abusing the tree layout to get the links array through it...
+
+  return {nodes, links}
+}
+
 //
 // bind or re-bind the data to d3 -
 // so that d3 can automagically do its transitions according to it
 //
 function rebind() {
 
-  // clever shortcut for de-structuring a links array and nodes array for force simulation input,
-  // from a single json hierarchy
-  var nodes = flattenDataTree(dataTree),
-    links = d3.layout.tree().links(nodes); // abusing the tree layout to get the links array through it...
+  var data = getLists()
+  var nodes = data.nodes
+  var links = data.links
 
   nodesD3 = nodesD3.data(nodes, function(d) { return d.id; });
   linksD3 = linksD3.data(links, function(d) { return d.target.id; });
@@ -96,7 +104,7 @@ function layoutInsertNew() {
     .call(forceSimulation.drag);
 
   nodeEnter.append("circle")
-    .attr("r", function(d) { return Math.sqrt(d.size) / 2 || 2; });
+    .attr("r", function(d) { return Math.sqrt(d.size) / 2 || 30; });
 
   nodeEnter.append("text")
     .attr("dy", ".35em")
@@ -111,8 +119,9 @@ function layoutInsertNew() {
 function startVisualization() {
 
   // de-structure the data for d3
-  var nodes = flattenDataTree(dataTree),
-    links = d3.layout.tree().links(nodes);
+  var data = getLists()
+  var nodes = data.nodes
+  var links = data.links
 
   // second tier of d3 binding - bind the d3 data to the d3 simulation
   forceSimulation

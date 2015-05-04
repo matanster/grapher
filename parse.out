@@ -433,7 +433,7 @@
       "type": "FunctionDeclaration",
       "id": {
         "type": "Identifier",
-        "name": "rebind"
+        "name": "getLists"
       },
       "params": [],
       "defaults": [],
@@ -462,7 +462,13 @@
                     }
                   ]
                 }
-              },
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
               {
                 "type": "VariableDeclarator",
                 "id": {
@@ -509,6 +515,131 @@
                       "name": "nodes"
                     }
                   ]
+                }
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "ReturnStatement",
+            "argument": {
+              "type": "ObjectExpression",
+              "properties": [
+                {
+                  "type": "Property",
+                  "key": {
+                    "type": "Identifier",
+                    "name": "nodes"
+                  },
+                  "computed": false,
+                  "value": {
+                    "type": "Identifier",
+                    "name": "nodes"
+                  },
+                  "kind": "init",
+                  "method": false,
+                  "shorthand": true
+                },
+                {
+                  "type": "Property",
+                  "key": {
+                    "type": "Identifier",
+                    "name": "links"
+                  },
+                  "computed": false,
+                  "value": {
+                    "type": "Identifier",
+                    "name": "links"
+                  },
+                  "kind": "init",
+                  "method": false,
+                  "shorthand": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "generator": false,
+      "expression": false
+    },
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "rebind"
+      },
+      "params": [],
+      "defaults": [],
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "data"
+                },
+                "init": {
+                  "type": "CallExpression",
+                  "callee": {
+                    "type": "Identifier",
+                    "name": "getLists"
+                  },
+                  "arguments": []
+                }
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "nodes"
+                },
+                "init": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "data"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "nodes"
+                  }
+                }
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "links"
+                },
+                "init": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "data"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "links"
+                  }
                 }
               }
             ],
@@ -1702,8 +1833,8 @@
                           },
                           "right": {
                             "type": "Literal",
-                            "value": 2,
-                            "raw": "2"
+                            "value": 30,
+                            "raw": "30"
                           }
                         }
                       }
@@ -1879,22 +2010,48 @@
                 "type": "VariableDeclarator",
                 "id": {
                   "type": "Identifier",
-                  "name": "nodes"
+                  "name": "data"
                 },
                 "init": {
                   "type": "CallExpression",
                   "callee": {
                     "type": "Identifier",
-                    "name": "flattenDataTree"
+                    "name": "getLists"
                   },
-                  "arguments": [
-                    {
-                      "type": "Identifier",
-                      "name": "dataTree"
-                    }
-                  ]
+                  "arguments": []
                 }
-              },
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "nodes"
+                },
+                "init": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "data"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "nodes"
+                  }
+                }
+              }
+            ],
+            "kind": "var"
+          },
+          {
+            "type": "VariableDeclaration",
+            "declarations": [
               {
                 "type": "VariableDeclarator",
                 "id": {
@@ -1902,45 +2059,16 @@
                   "name": "links"
                 },
                 "init": {
-                  "type": "CallExpression",
-                  "callee": {
-                    "type": "MemberExpression",
-                    "computed": false,
-                    "object": {
-                      "type": "CallExpression",
-                      "callee": {
-                        "type": "MemberExpression",
-                        "computed": false,
-                        "object": {
-                          "type": "MemberExpression",
-                          "computed": false,
-                          "object": {
-                            "type": "Identifier",
-                            "name": "d3"
-                          },
-                          "property": {
-                            "type": "Identifier",
-                            "name": "layout"
-                          }
-                        },
-                        "property": {
-                          "type": "Identifier",
-                          "name": "tree"
-                        }
-                      },
-                      "arguments": []
-                    },
-                    "property": {
-                      "type": "Identifier",
-                      "name": "links"
-                    }
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "data"
                   },
-                  "arguments": [
-                    {
-                      "type": "Identifier",
-                      "name": "nodes"
-                    }
-                  ]
+                  "property": {
+                    "type": "Identifier",
+                    "name": "links"
+                  }
                 }
               }
             ],

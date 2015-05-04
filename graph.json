@@ -1,20 +1,17 @@
 {
  "name": "Package A",
- "size": 9999,
  "children": [
   {
    "name": "Class A",
-   "size": 4000,
-   "children": [
-      {"name": "apply", "size": 1000},
-      {"name": "method b", "size": 1812},
-      {"name": "method c", "size": 1714},
-      {"name": "method d", "size": 1743}
+   "connections": [
+      {"name": "apply"},
+      {"name": "method b"},
+      {"name": "method c"},
+      {"name": "method d"}
      ]
     },
     {
      "name": "Class B",
-     "size": 4000,
      "children": [
       {"name": "apply", "size": 1534},
       {"name": "method b", "size": 1731},
@@ -25,7 +22,6 @@
     },
     {
      "name": "Class C",
-     "size": 4000,
      "children": [
       {"name": "apply", "size": 1074}
      ]
